@@ -8,12 +8,17 @@ import android.provider.AlarmClock
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import java.util.Calendar
 import kotlin.random.Random
 
 class VegaCommandEngine(private val context: Context) {
 
-    private val tts = VegaTTS(context)   // ← Fixed TTS with queue + fallback
+    private val tts = VegaTTS(context)   // Fixed TTS with queue + fallback
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private val TAG = "VegaCommandEngine"
     private var lastSpokenText = ""
 
@@ -168,11 +173,21 @@ class VegaCommandEngine(private val context: Context) {
     }
 
     // ════════════════════════════════════════════
-    // OFFLINE AI BRAIN — No API, No Internet
+    // AI BRAIN — Gemma 2B (on-device) + Offline fallback
     // ════════════════════════════════════════════
     private fun askAI(query: String) {
-        val reply = VegaOfflineAI.respond(query)
-        speak(reply)
+        if (VegaGemmaEngine.isModelAvailable(context) && VegaGemmaEngine.isInitialized) {
+            // Gemma 2B on-device LLM
+            speak("Soch raha hun...")
+            scope.launch {
+                val reply = VegaGemmaEngine.generate(query)
+                speak(reply)
+            }
+        } else {
+            // Offline pattern-based fallback
+            val reply = VegaOfflineAI.respond(query)
+            speak(reply)
+        }
     }
 
     // ════════════════════════════════════════════
@@ -295,5 +310,8 @@ class VegaCommandEngine(private val context: Context) {
         MainActivity.lastCommandCallback?.invoke("🤖 $text")
     }
 
-    fun destroy() { tts.destroy() }
+    fun destroy() {
+        tts.destroy()
+        scope.coroutineContext[kotlinx.coroutines.Job]?.cancel()
+    }
 }
