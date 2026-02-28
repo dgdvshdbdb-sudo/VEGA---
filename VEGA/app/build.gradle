@@ -12,10 +12,7 @@ android {
         minSdk 24
         targetSdk 34
         versionCode 3
-        versionName "3.0-gemma"
-
-        // Gemma model path (external storage)
-        buildConfigField "String", "GEMMA_MODEL_PATH", '"gemma-2b-it-cpu-int4.bin"'
+        versionName "3.0"
     }
 
     buildTypes {
@@ -33,14 +30,14 @@ android {
     }
     buildFeatures {
         compose true
-        buildConfig true
     }
     composeOptions {
         kotlinCompilerExtensionVersion '1.5.1'
     }
-    // Large APK allowed (model references)
-    aaptOptions {
-        noCompress "bin", "tflite"
+    packaging {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
     }
 }
 
@@ -54,10 +51,10 @@ dependencies {
     implementation 'androidx.compose.material3:material3'
     implementation 'androidx.compose.material:material-icons-extended:1.5.4'
 
-    // Coroutines — Gemma inference async ke liye
+    // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2'
 
-    // ═══ MediaPipe LLM Inference (Gemma 2B on-device) ═══
-    implementation 'com.google.mediapipe:tasks-genai:0.10.14'
+    // MediaPipe LLM Inference — correct artifact ID
+    implementation 'com.google.mediapipe:tasks-genai:0.10.11'
 }
