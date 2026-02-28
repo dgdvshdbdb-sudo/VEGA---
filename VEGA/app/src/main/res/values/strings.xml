@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">VEGA Agent</string>
+    <string name="accessibility_service_description">VEGA AI Agent requires this permission to automate UI actions and interact with your screen intelligently.</string>
+</resources>
