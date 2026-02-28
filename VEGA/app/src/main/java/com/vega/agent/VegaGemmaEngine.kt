@@ -24,7 +24,7 @@ object VegaGemmaEngine {
     const val MODEL_FILENAME = "gemma-2b-it-cpu-int4.bin"
 
     private var llm: LlmInference? = null
-    private var isInitialized = false
+    var isInitialized = false
     var onStatusUpdate: ((String) -> Unit)? = null
 
     private val SYSTEM_PROMPT = """<start_of_turn>user
