@@ -8,18 +8,12 @@ import android.provider.AlarmClock
 import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.Locale
 import kotlin.random.Random
 
 class VegaCommandEngine(private val context: Context) {
 
-    private val tts = VegaTTS(context)   // ← Fixed TTS (queue + fallback)
-    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    private val tts = VegaTTS(context)   // ← Fixed TTS with queue + fallback
     private val TAG = "VegaCommandEngine"
     private var lastSpokenText = ""
 
@@ -174,25 +168,11 @@ class VegaCommandEngine(private val context: Context) {
     }
 
     // ════════════════════════════════════════════
-    // AI BRAIN — Groq API
+    // OFFLINE AI BRAIN — No API, No Internet
     // ════════════════════════════════════════════
     private fun askAI(query: String) {
-        if (!VegaAIBrain.hasApiKey()) {
-            // No API key — fallback responses
-            val responses = listOf(
-                "Samjha nahi Boss — thoda clearly bolo?",
-                "Ye command mujhe nahi pata, kuch aur try karo",
-                "Hmm, iske baare mein nahi jaanta. Kuch aur pucho!",
-                "Boss, AI mode ke liye Groq API key chahiye"
-            )
-            speak(responses.random())
-            return
-        }
-        speak("Soch raha hun...")
-        scope.launch {
-            val response = VegaAIBrain.ask(query)
-            speak(response.text)
-        }
+        val reply = VegaOfflineAI.respond(query)
+        speak(reply)
     }
 
     // ════════════════════════════════════════════
@@ -315,5 +295,5 @@ class VegaCommandEngine(private val context: Context) {
         MainActivity.lastCommandCallback?.invoke("🤖 $text")
     }
 
-    fun destroy() { tts.destroy(); scope.coroutineContext[kotlinx.coroutines.Job]?.cancel() }
+    fun destroy() { tts.destroy() }
 }
